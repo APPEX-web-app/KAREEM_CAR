@@ -1388,6 +1388,23 @@ async function uploadDataUrlToStorage(dataUrl) {
   const ext = (dataUrl.match(/data:image\/(\w+)/) || [null, 'jpg'])[1] || 'jpg';
   return uploadCarPhoto(blob, `photo.${ext}`);
 }
+/** Supprime un fichier du bucket Storage quand l'admin retire une photo du véhicule. */
+async function deleteCarPhotoFromStorage(photoUrl) {
+  if (!useSupabase() || !photoUrl || typeof photoUrl !== 'string') return;
+  const prefix = `${SUPA_URL}/storage/v1/object/public/${BUCKET_CARS}/`;
+  if (!photoUrl.startsWith(prefix)) return;
+  const path = photoUrl.slice(prefix.length);
+  if (!path) return;
+  try {
+    const r = await fetch(`${SUPA_URL}/storage/v1/object/${BUCKET_CARS}/${path}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
+    });
+    if (!r.ok) console.warn('Storage delete failed', path, await r.text());
+  } catch (e) {
+    console.warn('Storage delete error', e);
+  }
+}
 
 // ── DATA ──
 const DEMO = [
@@ -1791,7 +1808,14 @@ async function toggleSold(id) {
 
 async function delCar(id) {
   if (!confirm('Supprimer ce véhicule ?')) return;
-  if (useSupabase()) { try { await sbDeleteCar(id); } catch (e) { toast('Erreur suppression', 'err'); return; } }
+  const car = cars.find(c => c.id === id);
+  if (useSupabase()) {
+    try {
+      await sbDeleteCar(id);
+      if (car && car.photos && car.photos.length)
+        car.photos.forEach(url => deleteCarPhotoFromStorage(url));
+    } catch (e) { toast('Erreur suppression', 'err'); return; }
+  }
   cars = cars.filter(c => c.id !== id);
   if (!useSupabase()) localStorage.setItem('kc_cars', JSON.stringify(cars));
   renderAdminGrid(); renderCars();
@@ -1859,7 +1883,8 @@ function renderThumbs() {
 
 function rmPhoto(i) {
   const n = editingPics.length;
-  if (i < n) editingPics.splice(i, 1); else pendingPics.splice(i - n, 1);
+  if (i < n) editingPics.splice(i, 1);
+  else pendingPics.splice(i - n, 1);
   renderThumbs();
 }
 
@@ -1901,6 +1926,9 @@ async function saveCar() {
       if (useSupabase()) {
         try {
           await sbUpdateCar(fid, row);
+          const oldUrls = c.photos || [];
+          const removed = oldUrls.filter(u => typeof u === 'string' && u.includes(BUCKET_CARS) && !photoUrls.includes(u));
+          removed.forEach(url => deleteCarPhotoFromStorage(url));
         } catch (e) {
           toast('Erreur enregistrement', 'err');
           return;
