@@ -141,11 +141,14 @@ body::after {
 
 /* ── HERO ── */
 #hero {
-  height:100vh; min-height:640px; position:relative; overflow:hidden;
+  height:100vh; min-height:720px; position:relative; overflow:hidden;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding-top: 70px;   /* navbar height */
-  padding-bottom: 220px; /* hero-badge height + extra breathing room */
+  padding-top: 120px;  /* navbar clearance so title/text don't sit under navbar */
+  padding-bottom: 220px; /* space for hero-badge + clear gap above catalogue so buttons stay visible */
   box-sizing: border-box;
+}
+@media (max-height: 700px) {
+  #hero { padding-top: 140px; } /* extra clearance on short viewports so text stays below navbar */
 }
 .hero-bg {
   position:absolute; inset:0; z-index:0;
@@ -210,7 +213,7 @@ body::after {
 .hero-h1 .italic {
   font-family:var(--ff-display);
   font-style:italic; font-weight:400;
-  font-size:0.55em; letter-spacing:0.04em;
+  font-size:0.50em; letter-spacing:0.04em;
   display:block; color:var(--text2);
   margin-top:8px; line-height:1.2;
 }
@@ -218,7 +221,7 @@ body::after {
   font-size:0.75rem; letter-spacing:0.2em; color:var(--text2); text-transform:uppercase;
   margin-bottom:44px; max-width:440px; margin-left:auto; margin-right:auto;
 }
-.hero-btns { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+.hero-btns { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:32px; }
 .btn-hero-main {
   display:inline-flex; align-items:center; gap:10px;
   background:var(--gold); color:var(--black);
@@ -1001,7 +1004,7 @@ footer {
   <div class="contact-inner">
     <div class="rv">
       <div class="sec-tag" data-i18n="contact_tag">Nous Joindre</div>
-      <h2 class="sec-title"><span data-i18n="contact_title">CONTACTEZ-</span><em>NOUS</em></h2>
+      <h2 class="sec-title"><span data-i18n="contact_title">CONTACTEZ-</span><em data-i18n="contact_title_suffix">NOUS</em></h2>
       <div class="sec-line"></div>
     </div>
     <p class="rv" id="contact-desc" data-i18n="contact_desc">Un véhicule vous intéresse ? Écrivez-nous sur WhatsApp, nous vous répondons rapidement.</p>
@@ -1719,6 +1722,7 @@ const TRANSLATIONS = {
     ds_note: 'Livraison incluse dans le prix · Délais communiqués à la commande',
     contact_tag: 'Nous Joindre',
     contact_title: 'CONTACTEZ-',
+    contact_title_suffix: 'NOUS',
     contact_desc: 'Un véhicule vous intéresse ? Écrivez-nous sur WhatsApp, nous vous répondons rapidement.',
     contact_btn: 'Écrire sur WhatsApp',
     ft_services: 'Services',
@@ -1790,6 +1794,7 @@ Pouvez-vous me donner plus d'informations ?`,
     ds_note: 'Delivery included in the price · Lead times communicated at order',
     contact_tag: 'Get in Touch',
     contact_title: 'CONTACT ',
+    contact_title_suffix: 'US',
     contact_desc: 'Interested in a vehicle? Message us on WhatsApp, we reply fast.',
     contact_btn: 'Write on WhatsApp',
     ft_services: 'Services',
