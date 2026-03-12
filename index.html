@@ -428,6 +428,32 @@ body::after {
 .car-dot { width:28px; height:2px; background:rgba(255,255,255,0.25); cursor:pointer; transition:background var(--t); }
 .car-dot.on { background:var(--gold); }
 
+/* 360° / Vue 3D viewer */
+.viewer-tabs { display:flex; gap:0; position:absolute; top:14px; left:14px; z-index:6; }
+.viewer-tab {
+  font-family:var(--ff-body); font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase;
+  padding:8px 16px; background:rgba(0,0,0,0.5); border:1px solid var(--border);
+  color:var(--text2); cursor:pointer; transition:all var(--t);
+}
+.viewer-tab:first-child { border-right: none; }
+.viewer-tab:hover { color:var(--gold); border-color:var(--border2); }
+.viewer-tab.active { background:rgba(212,168,67,0.15); color:var(--gold); border-color:var(--gold3); }
+.viewer-360-wrap { display:none; position:absolute; inset:0; background:var(--dark3); z-index:3; }
+.viewer-360-wrap.on { display:block; }
+.viewer-360-inner { width:100%; height:100%; overflow:hidden; cursor:grab; user-select:none; }
+.viewer-360-inner:active { cursor:grabbing; }
+.viewer-360-strip {
+  display:flex; height:100%; will-change:transform;
+  transition:transform 0.1s ease-out;
+}
+.viewer-360-strip.dragging { transition:none; }
+.viewer-360-strip img { height:100%; width:auto; object-fit:contain; flex-shrink:0; pointer-events:none; }
+.viewer-360-hint {
+  position:absolute; bottom:50px; left:0; right:0; text-align:center;
+  font-size:0.6rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--text3);
+  z-index:4; pointer-events:none;
+}
+
 /* MD body */
 .md-body { padding:36px 40px 40px; }
 .md-head { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:28px; }
@@ -1069,7 +1095,17 @@ footer {
   <div class="md-wrap">
     <button class="md-close" onclick="closeDetail()">✕</button>
     <div class="carousel" id="carousel">
+      <div class="viewer-tabs" id="viewer-tabs">
+        <button type="button" class="viewer-tab active" data-view="gallery" id="tab-gallery"></button>
+        <button type="button" class="viewer-tab" data-view="360" id="tab-360"></button>
+      </div>
       <div class="car-track" id="car-track"></div>
+      <div class="viewer-360-wrap" id="viewer-360-wrap">
+        <div class="viewer-360-inner" id="viewer-360-inner">
+          <div class="viewer-360-strip" id="viewer-360-strip"></div>
+        </div>
+        <div class="viewer-360-hint" id="viewer-360-hint"></div>
+      </div>
       <button class="car-prev" id="car-prev" onclick="cMove(-1)">‹</button>
       <button class="car-next" id="car-next" onclick="cMove(1)">›</button>
       <div class="car-dots" id="car-dots"></div>
@@ -1272,6 +1308,87 @@ setInterval(() => {
 // ── CONSTANTS ──
 const CORRECT_HASH = '41fa9a14657f8a3e305347a49bb12fb9b9bc8f20ab768a435d1a02578f780839'; // kareem2024
 
+// ══════════════════════════════════════════
+//  SUPABASE CONFIG (voir supabase-schema.sql pour créer les tables)
+// ══════════════════════════════════════════
+const SUPA_URL = 'https://xhztpeiifslassdszubi.supabase.co';  // remplacer par votre URL Supabase
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoenRwZWlpZnNsYXNzZHN6dWJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDMxMDAsImV4cCI6MjA4ODkxOTEwMH0.IfSkqsNK9CKqPrnD1uKeCF3-co1nh_TvruwvPMXCSeA';                         // remplacer par votre clé anon
+const BUCKET_CARS = 'car-photos';
+
+const supaHeaders = {
+  'apikey': SUPA_KEY,
+  'Authorization': `Bearer ${SUPA_KEY}`,
+  'Content-Type': 'application/json'
+};
+
+async function sbSelectCars() {
+  const r = await fetch(`${SUPA_URL}/rest/v1/cars?select=*&order=created_at.desc`, { headers: supaHeaders });
+  if (!r.ok) throw new Error(await r.text());
+  const data = await r.json();
+  return (data || []).map(row => ({ ...row, photos: row.photos || [], desc: row.desc || '' }));
+}
+async function sbInsertCar(row) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/cars`, {
+    method: 'POST',
+    headers: { ...supaHeaders, 'Prefer': 'return=representation' },
+    body: JSON.stringify(row)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  const arr = await r.json();
+  return arr[0];
+}
+async function sbUpdateCar(id, row) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/cars?id=eq.${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { ...supaHeaders, 'Prefer': 'return=representation' },
+    body: JSON.stringify(row)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  const arr = await r.json();
+  return arr[0];
+}
+async function sbDeleteCar(id) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/cars?id=eq.${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: supaHeaders
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+async function sbGetSetting(key) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/settings?key=eq.${encodeURIComponent(key)}&select=value`, { headers: supaHeaders });
+  if (!r.ok) throw new Error(await r.text());
+  const data = await r.json();
+  return data[0]?.value ?? null;
+}
+async function sbSetSetting(key, value) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/settings`, {
+    method: 'POST',
+    headers: { ...supaHeaders, 'Prefer': 'resolution=merge-duplicates,return=representation' },
+    body: JSON.stringify({ key, value })
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+async function uploadCarPhoto(fileOrBlob, fileName) {
+  const path = `cars/${Date.now()}-${Math.random().toString(36).slice(2)}-${fileName || 'img.jpg'}`;
+  const r = await fetch(`${SUPA_URL}/storage/v1/object/${BUCKET_CARS}/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` },
+    body: fileOrBlob
+  });
+  if (!r.ok) {
+    const err = await r.text();
+    if (err.includes('Bucket') || err.includes('bucket') || r.status === 400) throw new Error('BUCKET_MISSING');
+    throw new Error(err);
+  }
+  return `${SUPA_URL}/storage/v1/object/public/${BUCKET_CARS}/${path}`;
+}
+async function uploadDataUrlToStorage(dataUrl) {
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  const ext = (dataUrl.match(/data:image\/(\w+)/) || [null, 'jpg'])[1] || 'jpg';
+  return uploadCarPhoto(blob, `photo.${ext}`);
+}
+
 // ── DATA ──
 const DEMO = [
   { id:'kc_1', brand:'Chaparral', name:'SSI 5.0 Open Bow Rider 2000', year:2000, km:0,
@@ -1286,18 +1403,40 @@ const DEMO = [
     photos:[], sold:false }
 ];
 
-function loadCars() {
+function loadCarsFallback() {
   try { const d = localStorage.getItem('kc_cars'); return d ? JSON.parse(d) : DEMO; } catch { return DEMO; }
 }
-function saveCars() { localStorage.setItem('kc_cars', JSON.stringify(cars)); }
-function loadSettings() {
+function loadSettingsFallback() {
   try { const s = localStorage.getItem('kc_settings'); return s ? JSON.parse(s) : { wa:'22997000000', hash:'' }; }
   catch { return { wa:'22997000000', hash:'' }; }
 }
-function saveSettings() { localStorage.setItem('kc_settings', JSON.stringify(settings)); }
+function useSupabase() {
+  return typeof SUPA_URL === 'string' && SUPA_URL.includes('supabase.co') && typeof SUPA_KEY === 'string' && SUPA_KEY.length > 50;
+}
+async function loadCarsFromSupabase() {
+  if (!useSupabase()) return loadCarsFallback();
+  try {
+    const data = await sbSelectCars();
+    return Array.isArray(data) && data.length > 0 ? data : loadCarsFallback();
+  } catch (e) {
+    console.warn('Supabase cars load failed', e);
+    return loadCarsFallback();
+  }
+}
+async function loadSettingsFromSupabase() {
+  const def = { wa: '22997000000', hash: '' };
+  if (!useSupabase()) return loadSettingsFallback();
+  try {
+    const [wa, hash] = await Promise.all([sbGetSetting('admin_phone'), sbGetSetting('admin_pw_hash')]);
+    return { wa: wa || def.wa, hash: hash || def.hash };
+  } catch (e) {
+    console.warn('Supabase settings load failed', e);
+    return loadSettingsFallback();
+  }
+}
 
-let cars = loadCars();
-let settings = loadSettings();
+let cars = [];
+let settings = { wa: '22997000000', hash: '' };
 let curCat = 'all', curSta = 'all';
 let detailCar = null, cIdx = 0;
 let pendingPics = [], editingPics = [];
@@ -1441,6 +1580,29 @@ function openDetail(id) {
   if (prev) prev.style.display = photos.length > 1 ? 'flex' : 'none';
   if (next) next.style.display = photos.length > 1 ? 'flex' : 'none';
 
+  // Vue 360° : onglets + strip d'images
+  const tabGallery = $('tab-gallery'), tab360 = $('tab-360');
+  const wrap360 = $('viewer-360-wrap'), strip360 = $('viewer-360-strip'), hint360 = $('viewer-360-hint');
+  const tabsEl = $('viewer-tabs');
+  if (tabGallery) tabGallery.textContent = t('view_gallery');
+  if (tab360) tab360.textContent = t('view_360');
+  if (hint360) hint360.textContent = t('hint_drag_rotate');
+  if (tabsEl) tabsEl.style.display = photos.length > 1 ? 'flex' : 'none';
+  if (wrap360) wrap360.classList.remove('on');
+  if (strip360) {
+    strip360.innerHTML = '';
+    strip360.style.transform = 'translateX(0)';
+    if (photos.length) {
+      photos.forEach(p => {
+        const img = document.createElement('img');
+        img.src = p; img.alt = '';
+        strip360.appendChild(img);
+      });
+      initViewer360Drag();
+    }
+  }
+  setViewerMode('gallery');
+
   setText('d-brand', car.brand);
   setText('d-name',  car.name);
   setText('d-price', fmtPrice(car.price));
@@ -1497,6 +1659,38 @@ function goSlide(i) {
   document.querySelectorAll('.car-dot').forEach((d, j) => d.classList.toggle('on', j === i));
 }
 
+function setViewerMode(mode) {
+  const wrap360 = $('viewer-360-wrap');
+  const track = $('car-track');
+  const prev = $('car-prev'), next = $('car-next'), dots = $('car-dots');
+  document.querySelectorAll('.viewer-tab').forEach(t => t.classList.toggle('active', t.dataset.view === mode));
+  if (wrap360) wrap360.classList.toggle('on', mode === '360');
+  const isGallery = mode === 'gallery';
+  if (track) track.style.visibility = isGallery ? 'visible' : 'hidden';
+  if (prev) prev.style.visibility = isGallery ? 'visible' : 'hidden';
+  if (next) next.style.visibility = isGallery ? 'visible' : 'hidden';
+  if (dots) dots.style.visibility = isGallery ? 'visible' : 'hidden';
+}
+
+let viewer360State = { inner: null, strip: null, startX: 0, startTx: 0, tx: 0 };
+
+function initViewer360Drag() {
+  const inner = $('viewer-360-inner');
+  const strip = $('viewer-360-strip');
+  if (!inner || !strip) return;
+  viewer360State.inner = inner;
+  viewer360State.strip = strip;
+  viewer360State.tx = 0;
+
+  const onStart = (clientX) => {
+    viewer360State.startX = clientX;
+    viewer360State.startTx = viewer360State.tx;
+    strip.classList.add('dragging');
+  };
+  inner.onmousedown = (e) => { e.preventDefault(); onStart(e.clientX); };
+  inner.ontouchstart = (e) => { e.preventDefault(); onStart(e.touches[0].clientX); };
+}
+
 // ── HELPERS ──
 function setText(id, val) { const el = $(id); if (el) el.textContent = val; }
 function setHTML(id, val) { const el = $(id); if (el) el.innerHTML   = val; }
@@ -1531,10 +1725,13 @@ function closeAdmin() {
   $('panel-admin').classList.remove('open');
 }
 
-function saveWa() {
+async function saveWa() {
   const v = getVal('wa-in').trim().replace(/\D/g, '');
   if (!v) { toast('Numéro invalide', 'err'); return; }
-  settings.wa = v; saveSettings(); updateContactWa();
+  settings.wa = v;
+  if (useSupabase()) { try { await sbSetSetting('admin_phone', v); } catch (e) { toast('Erreur enregistrement', 'err'); return; } }
+  else localStorage.setItem('kc_settings', JSON.stringify(settings));
+  updateContactWa();
   toast('Numéro enregistré ✓', 'ok');
 }
 
@@ -1551,7 +1748,8 @@ async function changePwd() {
   if (!p1 || p1.length < 6) { toast('Min. 6 caractères', 'err'); return; }
   if (p1 !== p2)             { toast('Mots de passe différents', 'err'); return; }
   settings.hash = await sha256(p1);
-  saveSettings();
+  if (useSupabase()) { try { await sbSetSetting('admin_pw_hash', settings.hash); } catch (e) { toast('Erreur enregistrement', 'err'); return; } }
+  else localStorage.setItem('kc_settings', JSON.stringify(settings));
   setVal('pwd1-in', ''); setVal('pwd2-in', '');
   toast('Mot de passe modifié ✓', 'ok');
 }
@@ -1582,17 +1780,21 @@ function renderAdminGrid() {
   });
 }
 
-function toggleSold(id) {
+async function toggleSold(id) {
   const c = cars.find(x => x.id === id); if (!c) return;
   c.sold = !c.sold; if (c.sold) c.badge = '';
-  saveCars(); renderAdminGrid(); renderCars();
+  if (useSupabase()) { try { await sbUpdateCar(id, { sold: c.sold, badge: c.badge || null }); } catch (e) { toast('Erreur', 'err'); c.sold = !c.sold; c.badge = (c.sold ? '' : c.badge); return; } }
+  else localStorage.setItem('kc_cars', JSON.stringify(cars));
+  renderAdminGrid(); renderCars();
   toast(c.sold ? 'Marqué vendu' : 'Réactivé', 'ok');
 }
 
-function delCar(id) {
+async function delCar(id) {
   if (!confirm('Supprimer ce véhicule ?')) return;
+  if (useSupabase()) { try { await sbDeleteCar(id); } catch (e) { toast('Erreur suppression', 'err'); return; } }
   cars = cars.filter(c => c.id !== id);
-  saveCars(); renderAdminGrid(); renderCars();
+  if (!useSupabase()) localStorage.setItem('kc_cars', JSON.stringify(cars));
+  renderAdminGrid(); renderCars();
   toast('Supprimé', 'ok');
 }
 
@@ -1661,7 +1863,7 @@ function rmPhoto(i) {
   renderThumbs();
 }
 
-function saveCar() {
+async function saveCar() {
   const brand = getVal('f-brand').trim();
   const name  = getVal('f-name').trim();
   const year  = parseInt(getVal('f-year'));
@@ -1673,19 +1875,55 @@ function saveCar() {
   if (!brand || !name || !year || !cat || isNaN(price)) {
     toast('Champs obligatoires manquants (*)', 'err'); return;
   }
-  const photos = [...editingPics, ...pendingPics];
+  let photoUrls = [...editingPics, ...pendingPics];
+  if (useSupabase()) {
+    const toUpload = photoUrls.filter(p => typeof p === 'string' && p.startsWith('data:'));
+    try {
+      for (let i = 0; i < photoUrls.length; i++) {
+        if (typeof photoUrls[i] === 'string' && photoUrls[i].startsWith('data:'))
+          photoUrls[i] = await uploadDataUrlToStorage(photoUrls[i]);
+      }
+    } catch (e) {
+      toast('Erreur upload photos', 'err');
+      return;
+    }
+  }
+  const badge = getVal('f-badge') || null;
+  const power = getVal('f-power').trim() || null;
+  const color = getVal('f-color').trim() || null;
+  const desc  = getVal('f-desc').trim() || null;
   const fid = getVal('f-id');
+  const row = { brand, name, year, km, fuel: fuel || null, trans: trans || null, cat, badge, price, power, color, desc, photos: photoUrls, sold: false };
   if (fid) {
     const c = cars.find(x => x.id === fid);
-    if (c) Object.assign(c, { brand, name, year, km, fuel, trans, cat, price, photos,
-      badge: getVal('f-badge'), power: getVal('f-power').trim(),
-      color: getVal('f-color').trim(), desc: getVal('f-desc').trim() });
+    if (c) {
+      row.sold = c.sold;
+      if (useSupabase()) {
+        try {
+          await sbUpdateCar(fid, row);
+        } catch (e) {
+          toast('Erreur enregistrement', 'err');
+          return;
+        }
+      }
+      Object.assign(c, row);
+    }
   } else {
-    cars.push({ id: uid(), brand, name, year, km, fuel, trans, cat, price, photos,
-      badge: getVal('f-badge'), power: getVal('f-power').trim(),
-      color: getVal('f-color').trim(), desc: getVal('f-desc').trim(), sold: false });
+    row.id = uid();
+    if (useSupabase()) {
+      try {
+        const inserted = await sbInsertCar(row);
+        if (inserted) cars.push(inserted); else cars.push(row);
+      } catch (e) {
+        toast('Erreur enregistrement', 'err');
+        return;
+      }
+    } else {
+      cars.push({ ...row });
+    }
   }
-  saveCars(); closeForm(); renderAdminGrid(); renderCars();
+  if (!useSupabase()) localStorage.setItem('kc_cars', JSON.stringify(cars));
+  closeForm(); renderAdminGrid(); renderCars();
   toast('Véhicule enregistré ✓', 'ok');
 }
 
@@ -1744,6 +1982,9 @@ const TRANSLATIONS = {
     // detail actions
     btn_interested: 'Je suis intéressé(e)',
     btn_similar: 'Voir similaires →',
+    view_gallery: 'Galerie',
+    view_360: 'Vue 360°',
+    hint_drag_rotate: 'Glissez pour faire tourner',
     sold_msg: 'Vendu · ',
     wa_msg_interest: (brand, name, year, price) => `Bonjour Kareem Cars 👋
 Je suis intéressé(e) par le ${brand} ${name} (${year}) à ${price} FCFA.
@@ -1813,6 +2054,9 @@ Pouvez-vous me donner plus d'informations ?`,
     spec_available: 'Available', spec_sold: 'Sold',
     btn_interested: "I'm interested",
     btn_similar: 'See similar →',
+    view_gallery: 'Gallery',
+    view_360: '360° View',
+    hint_drag_rotate: 'Drag to rotate',
     sold_msg: 'Sold · ',
     wa_msg_interest: (brand, name, year, price) => `Hello Kareem Cars 👋
 I'm interested in the ${brand} ${name} (${year}) at ${price} FCFA.
@@ -1888,18 +2132,71 @@ function handleScroll() {
 }
 
 // ── INIT — runs immediately, script is after all HTML ──
-(function init() {
+(async function init() {
+  // Load cars and settings from Supabase (or fallback to localStorage / DEMO)
+  try {
+    cars = await loadCarsFromSupabase();
+    settings = await loadSettingsFromSupabase();
+  } catch (e) {
+    console.warn('Init load failed', e);
+    cars = loadCarsFallback();
+    settings = loadSettingsFallback();
+  }
+  if (!settings.hash) {
+    settings.hash = CORRECT_HASH;
+    if (useSupabase()) { try { await sbSetSetting('admin_pw_hash', settings.hash); } catch (_) {} }
+    else localStorage.setItem('kc_settings', JSON.stringify(settings));
+  }
+  if (!useSupabase() && !localStorage.getItem('kc_cars')) {
+    cars = DEMO;
+    localStorage.setItem('kc_cars', JSON.stringify(cars));
+  }
+
   // Attach event listeners — all elements exist because script is last in body
   $('modal-form').addEventListener('click',   function(e) { if (e.target === this) closeForm(); });
   $('modal-detail').addEventListener('click', function(e) { if (e.target === this) closeDetail(); });
 
   window.addEventListener('scroll', handleScroll);
 
+  // Vue 360° drag (global, une seule fois)
+  document.addEventListener('mousemove', (e) => {
+    const s = viewer360State;
+    if (!s.strip || !s.strip.classList.contains('dragging')) return;
+    const stripW = s.strip.scrollWidth;
+    const innerW = s.inner.clientWidth;
+    const minTx = innerW >= stripW ? 0 : -(stripW - innerW);
+    const dx = e.clientX - s.startX;
+    s.tx = Math.max(minTx, Math.min(0, s.startTx + dx));
+    s.strip.style.transform = `translateX(${s.tx}px)`;
+  });
+  document.addEventListener('mouseup', () => {
+    if (viewer360State.strip) viewer360State.strip.classList.remove('dragging');
+  });
+  document.addEventListener('touchmove', (e) => {
+    const s = viewer360State;
+    if (!s.strip || !s.strip.classList.contains('dragging')) return;
+    e.preventDefault();
+    const stripW = s.strip.scrollWidth;
+    const innerW = s.inner.clientWidth;
+    const minTx = innerW >= stripW ? 0 : -(stripW - innerW);
+    const dx = e.touches[0].clientX - s.startX;
+    s.tx = Math.max(minTx, Math.min(0, s.startTx + dx));
+    s.strip.style.transform = `translateX(${s.tx}px)`;
+  }, { passive: false });
+  document.addEventListener('touchend', () => {
+    if (viewer360State.strip) viewer360State.strip.classList.remove('dragging');
+  });
+
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     closeDetail();
     const mf = $('modal-form');
     if (mf) mf.classList.remove('open');
+  });
+
+  // Vue 360° tabs
+  document.querySelectorAll('.viewer-tab').forEach(btn => {
+    btn.addEventListener('click', () => setViewerMode(btn.dataset.view));
   });
 
   // Filters
@@ -1921,10 +2218,6 @@ function handleScroll() {
   $('btn-fr').classList.toggle('active', currentLang === 'fr');
   $('btn-en').classList.toggle('active', currentLang === 'en');
   applyLang();
-
-  // Seed data
-  if (!settings.hash) { settings.hash = CORRECT_HASH; saveSettings(); }
-  if (!localStorage.getItem('kc_cars')) saveCars();
 
   // Show site after loader
   setTimeout(() => {
