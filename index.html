@@ -143,12 +143,9 @@ body::after {
 #hero {
   height:100vh; min-height:720px; position:relative; overflow:hidden;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding-top: 120px;  /* navbar clearance so title/text don't sit under navbar */
-  padding-bottom: 120px; /* space for hero-badge + clear gap above catalogue so buttons stay visible */
+  padding-top: 70px;   /* navbar height */
+  padding-bottom: 120px; /* hero-badge height + extra breathing room */
   box-sizing: border-box;
-}
-@media (max-height: 700px) {
-  #hero { padding-top: 140px; } /* extra clearance on short viewports so text stays below navbar */
 }
 .hero-bg {
   position:absolute; inset:0; z-index:0;
@@ -213,7 +210,7 @@ body::after {
 .hero-h1 .italic {
   font-family:var(--ff-display);
   font-style:italic; font-weight:400;
-  font-size:0.50em; letter-spacing:0.04em;
+  font-size:0.55em; letter-spacing:0.04em;
   display:block; color:var(--text2);
   margin-top:8px; line-height:1.2;
 }
@@ -221,7 +218,7 @@ body::after {
   font-size:0.75rem; letter-spacing:0.2em; color:var(--text2); text-transform:uppercase;
   margin-bottom:44px; max-width:440px; margin-left:auto; margin-right:auto;
 }
-.hero-btns { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:32px; }
+.hero-btns { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
 .btn-hero-main {
   display:inline-flex; align-items:center; gap:10px;
   background:var(--gold); color:var(--black);
@@ -427,32 +424,6 @@ body::after {
 .car-dots { position:absolute; bottom:14px; left:0; right:0; display:flex; justify-content:center; gap:7px; z-index:5; }
 .car-dot { width:28px; height:2px; background:rgba(255,255,255,0.25); cursor:pointer; transition:background var(--t); }
 .car-dot.on { background:var(--gold); }
-
-/* 360° / Vue 3D viewer */
-.viewer-tabs { display:flex; gap:0; position:absolute; top:14px; left:14px; z-index:6; }
-.viewer-tab {
-  font-family:var(--ff-body); font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase;
-  padding:8px 16px; background:rgba(0,0,0,0.5); border:1px solid var(--border);
-  color:var(--text2); cursor:pointer; transition:all var(--t);
-}
-.viewer-tab:first-child { border-right: none; }
-.viewer-tab:hover { color:var(--gold); border-color:var(--border2); }
-.viewer-tab.active { background:rgba(212,168,67,0.15); color:var(--gold); border-color:var(--gold3); }
-.viewer-360-wrap { display:none; position:absolute; inset:0; background:var(--dark3); z-index:3; }
-.viewer-360-wrap.on { display:block; }
-.viewer-360-inner { width:100%; height:100%; overflow:hidden; cursor:grab; user-select:none; }
-.viewer-360-inner:active { cursor:grabbing; }
-.viewer-360-strip {
-  display:flex; height:100%; will-change:transform;
-  transition:transform 0.1s ease-out;
-}
-.viewer-360-strip.dragging { transition:none; }
-.viewer-360-strip img { height:100%; width:auto; object-fit:contain; flex-shrink:0; pointer-events:none; }
-.viewer-360-hint {
-  position:absolute; bottom:50px; left:0; right:0; text-align:center;
-  font-size:0.6rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--text3);
-  z-index:4; pointer-events:none;
-}
 
 /* MD body */
 .md-body { padding:36px 40px 40px; }
@@ -836,6 +807,32 @@ footer {
 }
 .lang-btn.active { background: var(--gold); color: var(--black); }
 .lang-btn:not(.active):hover { color: var(--gold); }
+
+/* ── 360° VIEWER ── */
+.viewer-tabs { display:flex; gap:0; position:absolute; top:14px; left:14px; z-index:6; }
+.viewer-tab {
+  font-family:var(--ff-body); font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase;
+  padding:8px 16px; background:rgba(0,0,0,0.5); border:1px solid var(--border);
+  color:var(--text2); cursor:pointer; transition:all var(--t);
+}
+.viewer-tab:first-child { border-right: none; }
+.viewer-tab:hover { color:var(--gold); border-color:var(--border2); }
+.viewer-tab.active { background:rgba(212,168,67,0.15); color:var(--gold); border-color:var(--gold3); }
+.viewer-360-wrap { display:none; position:absolute; inset:0; background:var(--dark3); z-index:3; }
+.viewer-360-wrap.on { display:block; }
+.viewer-360-inner { width:100%; height:100%; overflow:hidden; cursor:grab; user-select:none; }
+.viewer-360-inner:active { cursor:grabbing; }
+.viewer-360-strip {
+  display:flex; height:100%; will-change:transform;
+  transition:transform 0.1s ease-out;
+}
+.viewer-360-strip.dragging { transition:none; }
+.viewer-360-strip img { height:100%; width:auto; object-fit:contain; flex-shrink:0; pointer-events:none; }
+.viewer-360-hint {
+  position:absolute; bottom:50px; left:0; right:0; text-align:center;
+  font-size:0.6rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--text3);
+  z-index:4; pointer-events:none;
+}
 </style>
 </head>
 <body>
@@ -1030,7 +1027,7 @@ footer {
   <div class="contact-inner">
     <div class="rv">
       <div class="sec-tag" data-i18n="contact_tag">Nous Joindre</div>
-      <h2 class="sec-title"><span data-i18n="contact_title">CONTACTEZ-</span><em data-i18n="contact_title_suffix">NOUS</em></h2>
+      <h2 class="sec-title"><span data-i18n="contact_title">CONTACTEZ-</span><em>NOUS</em></h2>
       <div class="sec-line"></div>
     </div>
     <p class="rv" id="contact-desc" data-i18n="contact_desc">Un véhicule vous intéresse ? Écrivez-nous sur WhatsApp, nous vous répondons rapidement.</p>
@@ -1308,11 +1305,8 @@ setInterval(() => {
 // ── CONSTANTS ──
 const CORRECT_HASH = '41fa9a14657f8a3e305347a49bb12fb9b9bc8f20ab768a435d1a02578f780839'; // kareem2024
 
-// ══════════════════════════════════════════
-//  SUPABASE CONFIG (voir supabase-schema.sql pour créer les tables)
-// ══════════════════════════════════════════
-const SUPA_URL = 'https://xhztpeiifslassdszubi.supabase.co';  // remplacer par votre URL Supabase
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoenRwZWlpZnNsYXNzZHN6dWJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDMxMDAsImV4cCI6MjA4ODkxOTEwMH0.IfSkqsNK9CKqPrnD1uKeCF3-co1nh_TvruwvPMXCSeA';                         // remplacer par votre clé anon
+const SUPA_URL = 'https://xhztpeiifslassdszubi.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoenRwZWlpZnNsYXNzZHN6dWJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDMxMDAsImV4cCI6MjA4ODkxOTEwMH0.IfSkqsNK9CKqPrnD1uKeCF3-co1nh_TvruwvPMXCSeA';
 const BUCKET_CARS = 'car-photos';
 
 const supaHeaders = {
@@ -1334,8 +1328,7 @@ async function sbInsertCar(row) {
     body: JSON.stringify(row)
   });
   if (!r.ok) throw new Error(await r.text());
-  const arr = await r.json();
-  return arr[0];
+  const arr = await r.json(); return arr[0];
 }
 async function sbUpdateCar(id, row) {
   const r = await fetch(`${SUPA_URL}/rest/v1/cars?id=eq.${encodeURIComponent(id)}`, {
@@ -1344,21 +1337,18 @@ async function sbUpdateCar(id, row) {
     body: JSON.stringify(row)
   });
   if (!r.ok) throw new Error(await r.text());
-  const arr = await r.json();
-  return arr[0];
+  const arr = await r.json(); return arr[0];
 }
 async function sbDeleteCar(id) {
   const r = await fetch(`${SUPA_URL}/rest/v1/cars?id=eq.${encodeURIComponent(id)}`, {
-    method: 'DELETE',
-    headers: supaHeaders
+    method: 'DELETE', headers: supaHeaders
   });
   if (!r.ok) throw new Error(await r.text());
 }
 async function sbGetSetting(key) {
   const r = await fetch(`${SUPA_URL}/rest/v1/settings?key=eq.${encodeURIComponent(key)}&select=value`, { headers: supaHeaders });
   if (!r.ok) throw new Error(await r.text());
-  const data = await r.json();
-  return data[0]?.value ?? null;
+  const data = await r.json(); return data[0]?.value ?? null;
 }
 async function sbSetSetting(key, value) {
   const r = await fetch(`${SUPA_URL}/rest/v1/settings`, {
@@ -1388,7 +1378,6 @@ async function uploadDataUrlToStorage(dataUrl) {
   const ext = (dataUrl.match(/data:image\/(\w+)/) || [null, 'jpg'])[1] || 'jpg';
   return uploadCarPhoto(blob, `photo.${ext}`);
 }
-/** Supprime un fichier du bucket Storage quand l'admin retire une photo du véhicule. */
 async function deleteCarPhotoFromStorage(photoUrl) {
   if (!useSupabase() || !photoUrl || typeof photoUrl !== 'string') return;
   const prefix = `${SUPA_URL}/storage/v1/object/public/${BUCKET_CARS}/`;
@@ -1401,9 +1390,7 @@ async function deleteCarPhotoFromStorage(photoUrl) {
       headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
     });
     if (!r.ok) console.warn('Storage delete failed', path, await r.text());
-  } catch (e) {
-    console.warn('Storage delete error', e);
-  }
+  } catch (e) { console.warn('Storage delete error', e); }
 }
 
 // ── DATA ──
@@ -1435,10 +1422,7 @@ async function loadCarsFromSupabase() {
   try {
     const data = await sbSelectCars();
     return Array.isArray(data) && data.length > 0 ? data : loadCarsFallback();
-  } catch (e) {
-    console.warn('Supabase cars load failed', e);
-    return loadCarsFallback();
-  }
+  } catch (e) { console.warn('Supabase cars load failed', e); return loadCarsFallback(); }
 }
 async function loadSettingsFromSupabase() {
   const def = { wa: '22997000000', hash: '' };
@@ -1446,10 +1430,7 @@ async function loadSettingsFromSupabase() {
   try {
     const [wa, hash] = await Promise.all([sbGetSetting('admin_phone'), sbGetSetting('admin_pw_hash')]);
     return { wa: wa || def.wa, hash: hash || def.hash };
-  } catch (e) {
-    console.warn('Supabase settings load failed', e);
-    return loadSettingsFallback();
-  }
+  } catch (e) { console.warn('Supabase settings load failed', e); return loadSettingsFallback(); }
 }
 
 let cars = [];
@@ -1597,7 +1578,7 @@ function openDetail(id) {
   if (prev) prev.style.display = photos.length > 1 ? 'flex' : 'none';
   if (next) next.style.display = photos.length > 1 ? 'flex' : 'none';
 
-  // Vue 360° : onglets + strip d'images
+  // 360° setup
   const tabGallery = $('tab-gallery'), tab360 = $('tab-360');
   const wrap360 = $('viewer-360-wrap'), strip360 = $('viewer-360-strip'), hint360 = $('viewer-360-hint');
   const tabsEl = $('viewer-tabs');
@@ -1674,38 +1655,6 @@ function goSlide(i) {
   const track = $('car-track');
   if (track) track.style.transform = `translateX(-${i * 100}%)`;
   document.querySelectorAll('.car-dot').forEach((d, j) => d.classList.toggle('on', j === i));
-}
-
-function setViewerMode(mode) {
-  const wrap360 = $('viewer-360-wrap');
-  const track = $('car-track');
-  const prev = $('car-prev'), next = $('car-next'), dots = $('car-dots');
-  document.querySelectorAll('.viewer-tab').forEach(t => t.classList.toggle('active', t.dataset.view === mode));
-  if (wrap360) wrap360.classList.toggle('on', mode === '360');
-  const isGallery = mode === 'gallery';
-  if (track) track.style.visibility = isGallery ? 'visible' : 'hidden';
-  if (prev) prev.style.visibility = isGallery ? 'visible' : 'hidden';
-  if (next) next.style.visibility = isGallery ? 'visible' : 'hidden';
-  if (dots) dots.style.visibility = isGallery ? 'visible' : 'hidden';
-}
-
-let viewer360State = { inner: null, strip: null, startX: 0, startTx: 0, tx: 0 };
-
-function initViewer360Drag() {
-  const inner = $('viewer-360-inner');
-  const strip = $('viewer-360-strip');
-  if (!inner || !strip) return;
-  viewer360State.inner = inner;
-  viewer360State.strip = strip;
-  viewer360State.tx = 0;
-
-  const onStart = (clientX) => {
-    viewer360State.startX = clientX;
-    viewer360State.startTx = viewer360State.tx;
-    strip.classList.add('dragging');
-  };
-  inner.onmousedown = (e) => { e.preventDefault(); onStart(e.clientX); };
-  inner.ontouchstart = (e) => { e.preventDefault(); onStart(e.touches[0].clientX); };
 }
 
 // ── HELPERS ──
@@ -1800,7 +1749,7 @@ function renderAdminGrid() {
 async function toggleSold(id) {
   const c = cars.find(x => x.id === id); if (!c) return;
   c.sold = !c.sold; if (c.sold) c.badge = '';
-  if (useSupabase()) { try { await sbUpdateCar(id, { sold: c.sold, badge: c.badge || null }); } catch (e) { toast('Erreur', 'err'); c.sold = !c.sold; c.badge = (c.sold ? '' : c.badge); return; } }
+  if (useSupabase()) { try { await sbUpdateCar(id, { sold: c.sold, badge: c.badge || null }); } catch (e) { toast('Erreur', 'err'); c.sold = !c.sold; return; } }
   else localStorage.setItem('kc_cars', JSON.stringify(cars));
   renderAdminGrid(); renderCars();
   toast(c.sold ? 'Marqué vendu' : 'Réactivé', 'ok');
@@ -1883,8 +1832,7 @@ function renderThumbs() {
 
 function rmPhoto(i) {
   const n = editingPics.length;
-  if (i < n) editingPics.splice(i, 1);
-  else pendingPics.splice(i - n, 1);
+  if (i < n) editingPics.splice(i, 1); else pendingPics.splice(i - n, 1);
   renderThumbs();
 }
 
@@ -1902,16 +1850,12 @@ async function saveCar() {
   }
   let photoUrls = [...editingPics, ...pendingPics];
   if (useSupabase()) {
-    const toUpload = photoUrls.filter(p => typeof p === 'string' && p.startsWith('data:'));
     try {
       for (let i = 0; i < photoUrls.length; i++) {
         if (typeof photoUrls[i] === 'string' && photoUrls[i].startsWith('data:'))
           photoUrls[i] = await uploadDataUrlToStorage(photoUrls[i]);
       }
-    } catch (e) {
-      toast('Erreur upload photos', 'err');
-      return;
-    }
+    } catch (e) { toast('Erreur upload photos', 'err'); return; }
   }
   const badge = getVal('f-badge') || null;
   const power = getVal('f-power').trim() || null;
@@ -1929,10 +1873,7 @@ async function saveCar() {
           const oldUrls = c.photos || [];
           const removed = oldUrls.filter(u => typeof u === 'string' && u.includes(BUCKET_CARS) && !photoUrls.includes(u));
           removed.forEach(url => deleteCarPhotoFromStorage(url));
-        } catch (e) {
-          toast('Erreur enregistrement', 'err');
-          return;
-        }
+        } catch (e) { toast('Erreur enregistrement', 'err'); return; }
       }
       Object.assign(c, row);
     }
@@ -1942,10 +1883,7 @@ async function saveCar() {
       try {
         const inserted = await sbInsertCar(row);
         if (inserted) cars.push(inserted); else cars.push(row);
-      } catch (e) {
-        toast('Erreur enregistrement', 'err');
-        return;
-      }
+      } catch (e) { toast('Erreur enregistrement', 'err'); return; }
     } else {
       cars.push({ ...row });
     }
@@ -2009,10 +1947,8 @@ const TRANSLATIONS = {
     spec_available: 'Disponible', spec_sold: 'Vendu',
     // detail actions
     btn_interested: 'Je suis intéressé(e)',
+    view_gallery: 'Galerie', view_360: 'Vue 360°', hint_drag_rotate: 'Glissez pour faire tourner',
     btn_similar: 'Voir similaires →',
-    view_gallery: 'Galerie',
-    view_360: 'Vue 360°',
-    hint_drag_rotate: 'Glissez pour faire tourner',
     sold_msg: 'Vendu · ',
     wa_msg_interest: (brand, name, year, price) => `Bonjour Kareem Cars 👋
 Je suis intéressé(e) par le ${brand} ${name} (${year}) à ${price} FCFA.
@@ -2081,10 +2017,8 @@ Pouvez-vous me donner plus d'informations ?`,
     spec_cat: 'Category', spec_power: 'Power', spec_color: 'Color/Options', spec_status: 'Status',
     spec_available: 'Available', spec_sold: 'Sold',
     btn_interested: "I'm interested",
+    view_gallery: 'Gallery', view_360: '360° View', hint_drag_rotate: 'Drag to rotate',
     btn_similar: 'See similar →',
-    view_gallery: 'Gallery',
-    view_360: '360° View',
-    hint_drag_rotate: 'Drag to rotate',
     sold_msg: 'Sold · ',
     wa_msg_interest: (brand, name, year, price) => `Hello Kareem Cars 👋
 I'm interested in the ${brand} ${name} (${year}) at ${price} FCFA.
@@ -2141,6 +2075,37 @@ function applyLang() {
   updateContactWa();
 }
 
+let viewer360State = { inner: null, strip: null, startX: 0, startTx: 0, tx: 0 };
+
+function initViewer360Drag() {
+  const inner = $('viewer-360-inner');
+  const strip = $('viewer-360-strip');
+  if (!inner || !strip) return;
+  viewer360State.inner = inner;
+  viewer360State.strip = strip;
+  viewer360State.tx = 0;
+  const onStart = (clientX) => {
+    viewer360State.startX = clientX;
+    viewer360State.startTx = viewer360State.tx;
+    strip.classList.add('dragging');
+  };
+  inner.onmousedown = (e) => { e.preventDefault(); onStart(e.clientX); };
+  inner.ontouchstart = (e) => { e.preventDefault(); onStart(e.touches[0].clientX); };
+}
+
+function setViewerMode(mode) {
+  const wrap360 = $('viewer-360-wrap');
+  const track = $('car-track');
+  const prev = $('car-prev'), next = $('car-next'), dots = $('car-dots');
+  document.querySelectorAll('.viewer-tab').forEach(tb => tb.classList.toggle('active', tb.dataset.view === mode));
+  if (wrap360) wrap360.classList.toggle('on', mode === '360');
+  const isGallery = mode === 'gallery';
+  if (track) track.style.visibility = isGallery ? 'visible' : 'hidden';
+  if (prev) prev.style.visibility = isGallery ? 'visible' : 'hidden';
+  if (next) next.style.visibility = isGallery ? 'visible' : 'hidden';
+  if (dots) dots.style.visibility = isGallery ? 'visible' : 'hidden';
+}
+
 // ── ADMIN ROUTE ──
 function checkRoute() {
   if (location.search.includes('showroom')) {
@@ -2161,7 +2126,6 @@ function handleScroll() {
 
 // ── INIT — runs immediately, script is after all HTML ──
 (async function init() {
-  // Load cars and settings from Supabase (or fallback to localStorage / DEMO)
   try {
     cars = await loadCarsFromSupabase();
     settings = await loadSettingsFromSupabase();
@@ -2180,18 +2144,16 @@ function handleScroll() {
     localStorage.setItem('kc_cars', JSON.stringify(cars));
   }
 
-  // Attach event listeners — all elements exist because script is last in body
   $('modal-form').addEventListener('click',   function(e) { if (e.target === this) closeForm(); });
   $('modal-detail').addEventListener('click', function(e) { if (e.target === this) closeDetail(); });
 
   window.addEventListener('scroll', handleScroll);
 
-  // Vue 360° drag (global, une seule fois)
+  // 360° drag (global)
   document.addEventListener('mousemove', (e) => {
     const s = viewer360State;
     if (!s.strip || !s.strip.classList.contains('dragging')) return;
-    const stripW = s.strip.scrollWidth;
-    const innerW = s.inner.clientWidth;
+    const stripW = s.strip.scrollWidth, innerW = s.inner.clientWidth;
     const minTx = innerW >= stripW ? 0 : -(stripW - innerW);
     const dx = e.clientX - s.startX;
     s.tx = Math.max(minTx, Math.min(0, s.startTx + dx));
@@ -2204,8 +2166,7 @@ function handleScroll() {
     const s = viewer360State;
     if (!s.strip || !s.strip.classList.contains('dragging')) return;
     e.preventDefault();
-    const stripW = s.strip.scrollWidth;
-    const innerW = s.inner.clientWidth;
+    const stripW = s.strip.scrollWidth, innerW = s.inner.clientWidth;
     const minTx = innerW >= stripW ? 0 : -(stripW - innerW);
     const dx = e.touches[0].clientX - s.startX;
     s.tx = Math.max(minTx, Math.min(0, s.startTx + dx));
@@ -2222,7 +2183,7 @@ function handleScroll() {
     if (mf) mf.classList.remove('open');
   });
 
-  // Vue 360° tabs
+  // 360° tabs
   document.querySelectorAll('.viewer-tab').forEach(btn => {
     btn.addEventListener('click', () => setViewerMode(btn.dataset.view));
   });
@@ -2246,6 +2207,10 @@ function handleScroll() {
   $('btn-fr').classList.toggle('active', currentLang === 'fr');
   $('btn-en').classList.toggle('active', currentLang === 'en');
   applyLang();
+
+  // Seed data
+  if (!settings.hash) { settings.hash = CORRECT_HASH; saveSettings(); }
+  if (!localStorage.getItem('kc_cars')) saveCars();
 
   // Show site after loader
   setTimeout(() => {
