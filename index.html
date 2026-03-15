@@ -94,53 +94,133 @@ body::after {
 
 /* ── NAVBAR ── */
 #navbar {
-  position:fixed; top:0; left:0; right:0; z-index:200;
-  height:70px;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 48px;
-  background: rgba(8,8,8,0.88);
+  --nb-height: 90px;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: var(--nb-height);
+  min-height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 clamp(16px, 4vw, 48px);
+  padding-left: max(clamp(16px, 4vw, 48px), env(safe-area-inset-left));
+  padding-right: max(clamp(16px, 4vw, 48px), env(safe-area-inset-right));
+  background: rgba(8,8,8,0.92);
   backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
-  transition: height var(--t) var(--ease);
+  transition: height var(--t) var(--ease), padding var(--t) var(--ease);
 }
-#navbar.compact { height:58px; }
-.nb-logo-wrap { display:flex; align-items:center; gap:14px; cursor:pointer; }
+#navbar.compact { --nb-height: 72px; height: 72px; }
+#navbar.compact .nb-logo-icon { width: 72px; height: 72px; }
+.nb-logo-wrap { display: flex; align-items: center; gap: clamp(8px, 2vw, 14px); cursor: pointer; min-width: 0; }
 .nb-logo-icon {
-  width:90px; height:90px; display:flex; align-items:center; justify-content:center;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
 }
-.nb-logo-icon img { width:150%; height:150%; object-fit:contain; display:block; }
-.nb-brand { font-family:var(--ff-title); font-size:1.5rem; letter-spacing:0.2em; color:var(--gold); }
-.nb-tagline { font-size:0.55rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--text3); }
-.nb-links { display:flex; gap:32px; align-items:center; }
+.nb-logo-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.nb-brand {
+  font-family: var(--ff-title);
+  font-size: clamp(1rem, 3.2vw, 1.5rem);
+  letter-spacing: 0.15em;
+  color: var(--gold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nb-tagline {
+  font-size: clamp(0.45rem, 1.5vw, 0.55rem);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nb-links {
+  display: flex;
+  gap: clamp(16px, 2.5vw, 32px);
+  align-items: center;
+}
 .nb-link {
-  font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--text2);
-  cursor:pointer; text-decoration:none; transition:color var(--t);
-  position:relative; padding-bottom:2px;
+  font-size: clamp(0.6rem, 1.8vw, 0.7rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text2);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color var(--t);
+  position: relative;
+  padding-bottom: 2px;
+  white-space: nowrap;
 }
 .nb-link::after {
-  content:''; position:absolute; bottom:0; left:0; width:0; height:1px;
-  background:var(--gold); transition:width var(--t) var(--ease);
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--gold);
+  transition: width var(--t) var(--ease);
 }
-.nb-link:hover { color:var(--gold); }
-.nb-link:hover::after { width:100%; }
+.nb-link:hover { color: var(--gold); }
+.nb-link:hover::after { width: 100%; }
 .nb-cta {
-  font-family:var(--ff-body); font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase;
-  background:var(--gold); color:var(--black); font-weight:600;
-  padding:9px 22px; border:none; cursor:pointer; transition:all var(--t);
+  font-family: var(--ff-body);
+  font-size: clamp(0.58rem, 1.6vw, 0.65rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: var(--gold);
+  color: var(--black);
+  font-weight: 600;
+  padding: clamp(8px, 1.5vw, 9px) clamp(14px, 2.5vw, 22px);
+  border: none;
+  cursor: pointer;
+  transition: all var(--t);
   clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  white-space: nowrap;
 }
-.nb-cta:hover { background:var(--gold2); }
+.nb-cta:hover { background: var(--gold2); }
+.nb-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 #hmbg {
-  display:none; flex-direction:column; gap:5px;
-  background:none; border:none; cursor:pointer; padding:4px;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  margin: 0 -6px 0 0;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 4px;
+  transition: background 0.2s;
 }
-#hmbg span { width:24px; height:1px; background:var(--gold); display:block; transition:var(--t); }
+#hmbg:hover { background: rgba(212,168,67,0.08); }
+#hmbg span {
+  width: 22px;
+  height: 1.5px;
+  background: var(--gold);
+  display: block;
+  transition: transform var(--t) var(--ease), opacity var(--t);
+}
+#hmbg.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+#hmbg.open span:nth-child(2) { opacity: 0; }
+#hmbg.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+.lang-toggle { flex-shrink: 0; }
+@media (max-width: 900px) {
+  body.nav-open { overflow: hidden; touch-action: none; }
+}
 
 /* ── HERO ── */
 #hero {
   height:100vh; min-height:720px; position:relative; overflow:hidden;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding-top: 120px;  /* navbar clearance so title/text don't sit under navbar */
+  padding-top: 140px;  /* navbar clearance (logo 90px) so title/text don't sit under navbar */
   padding-bottom: 120px; /* space for hero-badge + clear gap above catalogue so buttons stay visible */
   box-sizing: border-box;
 }
@@ -731,12 +811,57 @@ footer {
 .rv.vis { opacity:1; transform:translateY(0); }
 
 /* ── RESPONSIVE ── */
-@media(max-width:900px){
-  #navbar { padding:0 20px; }
-  .nb-links { display:none; flex-direction:column; gap:18px; position:absolute; top:70px; left:0; right:0; background:var(--dark1); padding:20px 24px; border-bottom:1px solid var(--border); }
-  .nb-links.open { display:flex; }
-  #hmbg { display:flex; }
-  #cars-grid, #filters, .an-content { padding-left:20px; padding-right:20px; }
+@media (max-width: 900px) {
+  #navbar {
+    --nb-height: 56px;
+    height: 56px;
+    min-height: 52px;
+    padding: 0 max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  #navbar.compact { height: 52px; }
+  .nb-logo-icon { width: 100px; height: 100px; }
+  .nb-brand { font-size: 1.1rem; letter-spacing: 0.12em; }
+  .nb-tagline { font-size: 0.5rem; letter-spacing: 0.2em; }
+  .nb-links {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    position: fixed;
+    top: var(--nb-height);
+    left: 0;
+    right: 0;
+    background: var(--dark1);
+    padding: 12px 16px 20px;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+    max-height: calc(100vh - var(--nb-height));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nb-links.open { display: flex; }
+  .nb-link {
+    font-size: 0.75rem;
+    padding: 14px 12px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .nb-link:last-of-type { border-bottom: none; }
+  .nb-cta {
+    margin-top: 8px;
+    padding: 12px 16px;
+    font-size: 0.7rem;
+    justify-content: center;
+    min-height: 44px;
+  }
+  #hmbg { display: flex; }
+  #hero { padding-top: 96px; }
+  #cars-grid, #filters, .an-content { padding-left: 20px; padding-right: 20px; }
   .about-grid { grid-template-columns:1fr; gap:36px; }
   .about-inner, .contact-inner, footer { padding-left:20px; padding-right:20px; }
   .an-settings { grid-template-columns:1fr; }
@@ -749,7 +874,15 @@ footer {
   .ft-top { gap:28px; }
   .ft-brand { flex:0 0 100%; }
 }
-@media(max-width:480px){
+@media (max-width: 600px) {
+  .nb-tagline { display: none; }
+}
+@media (max-width: 480px) {
+  #navbar { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
+  .nb-logo-icon { width: 100px; height: 90px; }
+  .nb-brand { font-size: 1rem; letter-spacing: 0.1em; }
+  .nb-links { padding: 10px 12px 16px; padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
+  .nb-link { padding: 12px 10px; font-size: 0.72rem; }
   .md-head { flex-direction:column; }
   .md-price-wrap { text-align:left; }
   .md-actions { flex-direction:column; }
@@ -865,13 +998,15 @@ footer {
     <a class="nb-link" onclick="goTo('contact')" data-i18n="nav_contact">Contact</a>
     <button class="nb-cta" onclick="goTo('catalogue')" data-i18n="nav_cta">Voir les véhicules</button>
   </div>
-  <div class="lang-toggle">
-    <button class="lang-btn" id="btn-fr" onclick="setLang('fr')">FR</button>
-    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  <div class="nb-right">
+    <div class="lang-toggle">
+      <button class="lang-btn" id="btn-fr" onclick="setLang('fr')">FR</button>
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
+    <button id="hmbg" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
-  <button id="hmbg" onclick="toggleMenu()" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
 </nav>
 
 <!-- HERO -->
@@ -1474,12 +1609,18 @@ function goTo(id) {
   const el = $(id);
   if (el) el.scrollIntoView({ behavior:'smooth' });
   const nb = $('nb-links');
+  const hmbg = $('hmbg');
   if (nb) nb.classList.remove('open');
+  if (hmbg) hmbg.classList.remove('open');
+  document.body.classList.remove('nav-open');
 }
 
 function toggleMenu() {
   const nb = $('nb-links');
+  const hmbg = $('hmbg');
   if (nb) nb.classList.toggle('open');
+  if (hmbg) hmbg.classList.toggle('open');
+  document.body.classList.toggle('nav-open', nb && nb.classList.contains('open'));
 }
 
 // ── BADGE ──
